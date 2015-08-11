@@ -1,20 +1,34 @@
+from math import sqrt
+
 from config import *
 
 from libtcodpy import random_get_int as randint
 import libtcodpy as libtcod
-#####################
-#Aesthetics
-#####################
+####################
+# Class Components TODO: Get this onto a separate file
+####################
+class Fighter:
+    def __init__(self, hp, defense, power):
+        self.max_hp = hp
+        self.hp = hp
+        self.defense = defense
+        self.power = power
 
-#color_dark_wall = libtcod.Color(0, 0, 100)
-#color_dark_ground = libtcod.Color(50, 50, 150)
-#color_light_wall = libtcod.Color(0, 0, 100)
-#color_light_ground = libtcod.Color(200, 180, 50)
+class BasicMonster:
+    def take_turn(self):
+        """
+        Beelines for player and attacks.
+        """
+        monster = self.owner
+        if(libtcod.map_is_in_fov(fov_map, monster.x, monster.y)): 
+            if monster.distance_to(player) >= 2:
+                monster.move_towards(player.x, player.y)
+            elif(player.fighter.hp > 0):
+                print('%s attacks you, but it bounces off your armor!' % monster.name)
 
 ####################
-# Classes
+# Classes TODO: Get this onto a separate file
 ####################
-
 class Rect:
     def __init__(self, x, y, w, h):
         self.x1 = x
@@ -58,12 +72,33 @@ class Object:
         if(self.ai):
             self.ai.owner = self
 
-
     def move(self, dx, dy):
         if not is_blocked(self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
+
+    def move_towards(self, target_x, target_y):
+        """
+        Take the shortest path to target coordinates.
+        """
+
+        #vector from this object to the target, and distance
+        dx = target_x - self.x
+        dy = target_y - self.y
+        distance = sqrt(dx ** 2 + dy ** 2)
  
+        #normalize it to length 1 (preserving direction), then round it and
+        #convert to integer so the movement is restricted to the map grid
+        dx = int(round(dx / distance))
+        dy = int(round(dy / distance))
+        self.move(dx, dy)
+    
+    def distance_to(self, other):
+        #return the distance to another object
+        dx = other.x - self.x
+        dy = other.y - self.y
+        return sqrt(dx ** 2 + dy ** 2)
+
     def draw(self):
         #set the color and then draw the character that represents this object at its position
         libtcod.console_set_default_foreground(con, self.color)
@@ -72,7 +107,6 @@ class Object:
     def clear(self):
         #erase the character that represents this object
         libtcod.console_put_char(con, self.x, self.y, ' ', libtcod.BKGND_NONE)
- 
 
 def player_move_or_attack(dx, dy):
     global fov_recompute
@@ -127,8 +161,11 @@ libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 ############################################
 # Globals
 ############################################
+
+fighter_component = Fighter(hp=30, defense=2, power=5)
+
 #create object representing the player
-player = Object(0,0, '@', 'player', libtcod.white, blocks = True)
+player = Object(0,0, '@', 'player', libtcod.white, blocks = True, fighter=fighter_component)
 player.x = 25
 player.y = 23
 
@@ -166,9 +203,17 @@ def place_objects(room):
         y = randint(0, room.y1, room.y2)
         if not is_blocked(x,y):    
             if(randint(0, 0, 100) < 80): #80% chance
-                monster = Object(x,y, 'o', 'orc', libtcod.desaturated_green, blocks=True)
+                fighter_component = Fighter(hp=10, defense=0, power=3)
+                ai_component = BasicMonster()
+                monster = Object(x,y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
+                    fighter=fighter_component,
+                    ai=ai_component)
             else:
-                monster = Object(x,y, 'T', 'troll', libtcod.darker_green, blocks=True)
+                fighter_component = Fighter(hp=16, defense=1, power=4)
+                ai_component = BasicMonster()
+                monster = Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
+                    fighter=fighter_component,
+                    ai=ai_component)
 
             objects.append(monster)
         
@@ -297,7 +342,7 @@ while not libtcod.console_is_window_closed():
     player_action = handle_keys()
     if player_action == 'exit':
         break
-    elif STATE == 'playing' and player_action == 'didnt-take-turn':
+    elif STATE == 'playing' and player_action != 'didnt-take-turn':
         for object in objects:
-            if object != player:
-                print('%s growls.' % object.name)
+            if object.ai:
+                object.ai.take_turn()
