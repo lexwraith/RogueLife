@@ -13,6 +13,18 @@ class Fighter:
         self.hp = hp
         self.defense = defense
         self.power = power
+    
+    def take_damage(self, damage):
+        if damage > 0:
+            self.hp -= damage
+            self.hp = self.hp if self.hp >= 0 else 0
+
+    def attack(self, target):
+        damage = self.power - target.fighter.defense
+        if(damage > 0):
+            print("%s attacks %s for %s damage." % (self.owner.name, target.name, damage))
+        else:
+            print("%s tickles %s" % (self.owner.name, target.name))
 
 class BasicMonster:
     def take_turn(self):
@@ -24,7 +36,7 @@ class BasicMonster:
             if monster.distance_to(player) >= 2:
                 monster.move_towards(player.x, player.y)
             elif(player.fighter.hp > 0):
-                print('%s attacks you, but it bounces off your armor!' % monster.name)
+                monster.fighter.attack(player)
 
 ####################
 # Classes TODO: Get this onto a separate file
@@ -120,7 +132,7 @@ def player_move_or_attack(dx, dy):
             break
 
     if target is not None:
-        print('The %s laughs at your attempt.' % target.name)
+        player.fighter.attack(target)
     else:
         player.move(dx, dy)
         fov_recompute = True
@@ -318,6 +330,11 @@ def render_all():
     
     libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
+    libtcod.console_set_default_foreground(con, libtcod.white)
+    libtcod.console_print_ex(con, 1, SCREEN_HEIGHT - 2, libtcod.BKGND_NONE, libtcod.LEFT,
+        'HP:%s/%s' % (player.fighter.hp, player.fighter.max_hp))
+    
+ 
 fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
 fov_recompute = True
 for y in range(MAP_HEIGHT):
