@@ -8,21 +8,26 @@ import libtcodpy as libtcod
 # Class Components TODO: Get this onto a separate file
 ####################
 class Fighter:
-    def __init__(self, hp, defense, power):
+    def __init__(self, hp, defense, power, death_function=None):
         self.max_hp = hp
         self.hp = hp
         self.defense = defense
         self.power = power
-    
+        self.death_function = death_function
+
     def take_damage(self, damage):
         if damage > 0:
             self.hp -= damage
-            self.hp = self.hp if self.hp >= 0 else 0
-
+            if(self.hp <= 0):
+                function = self.death_function
+                if function is not None:
+                    function(self.owner)
+ 
     def attack(self, target):
         damage = self.power - target.fighter.defense
         if(damage > 0):
             print("%s attacks %s for %s damage." % (self.owner.name, target.name, damage))
+            target.fighter.take_damage(damage)
         else:
             print("%s tickles %s" % (self.owner.name, target.name))
 
@@ -120,6 +125,33 @@ class Object:
         #erase the character that represents this object
         libtcod.console_put_char(con, self.x, self.y, ' ', libtcod.BKGND_NONE)
 
+    def send_to_back(self):
+        """
+        Puts object at start of draw queue.
+        TODO: Draw queue should be a priority queue/heap.
+        """
+        global objects
+        objects.remove(self)
+        objects.insert(0,self)
+
+def player_death(player):
+    global STATE
+    print('You dead son.')
+    STATE = 'dead'
+
+    player.char = '%'
+    player.color = libtcod.dark_red
+
+def monster_death(monster):
+    print('%s is dead.' % monster.name.capitalize())
+    monster.char = '%'
+    monster.color = libtcod.dark_red
+    monster.blocks = False
+    monster.fighter = None
+    monster.ai = None
+    monster.name = 'remains of %s' % monster.name
+    monster.send_to_back()
+
 def player_move_or_attack(dx, dy):
     global fov_recompute
     x = player.x + dx
@@ -127,7 +159,7 @@ def player_move_or_attack(dx, dy):
 
     target = None
     for object in objects:
-        if object.x == x and object.y == y:
+        if object.fighter and object.x == x and object.y == y:
             target = object
             break
 
@@ -174,10 +206,11 @@ libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 # Globals
 ############################################
 
-fighter_component = Fighter(hp=30, defense=2, power=5)
+fighter_component = Fighter(hp=30, defense=2, power=5, death_function=player_death)
 
 #create object representing the player
-player = Object(0,0, '@', 'player', libtcod.white, blocks = True, fighter=fighter_component)
+player = Object(0,0, '@', 'player', libtcod.white, blocks = True, 
+            fighter=fighter_component)
 player.x = 25
 player.y = 23
 
@@ -215,13 +248,15 @@ def place_objects(room):
         y = randint(0, room.y1, room.y2)
         if not is_blocked(x,y):    
             if(randint(0, 0, 100) < 80): #80% chance
-                fighter_component = Fighter(hp=10, defense=0, power=3)
+                fighter_component = Fighter(hp=10, defense=0, power=3,
+                    death_function=monster_death)
                 ai_component = BasicMonster()
                 monster = Object(x,y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
                     fighter=fighter_component,
                     ai=ai_component)
             else:
-                fighter_component = Fighter(hp=16, defense=1, power=4)
+                fighter_component = Fighter(hp=16, defense=1, power=4, 
+                    death_function=monster_death)
                 ai_component = BasicMonster()
                 monster = Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
                     fighter=fighter_component,
@@ -326,8 +361,10 @@ def render_all():
                     m[x][y].explored = True
 
     for object in objects:
-        object.draw()
-    
+        if(object != player):
+            object.draw()
+    player.draw()
+
     libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
     libtcod.console_set_default_foreground(con, libtcod.white)
