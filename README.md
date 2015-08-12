@@ -6,14 +6,17 @@ Note that all these files need to be in your libtcod directory, i.e.
 
 The reason is I failed to install libtcod properly, or, more accurately, libtcod has really poor management and installation instructions (i.e. none. If you actually look at their documentation, even the filenames aren't correct, nor the directories inside the source).
 
+Goals:
+Test to see if it's possible to run proposed AI/combat system via Python. Will likely develop full game in C++ with SDL2.
+
 Roadmap:
-*1) Follow tutorial up to initial combat stages - 100%
-*2) Expand on event processing + logging
-*3) Introduce UI and event stream
-*4) Mechanics - All possible attacks
-*5) Mechanics - Counters and 'Instincts'
-*6) Mechanics - Positioning and Movement
-*7) AI - General priority matrix (think chess with weighted modifiers)
-*8) AI - Non-combat priority matrix (i.e. NPCs)
-*9) AI - Advanced combat AI
-*10) AI - Group dynamics (swarming, ranged supporting, buffing/debuffing)
+*   1) Follow tutorial up to initial combat stages - 100%
+*   2) Expand on event processing + logging
+*   3) Introduce UI and event stream
+*   4) Mechanics - All possible attacks
+*   5) Mechanics - Counters and 'Instincts'
+*   6) Mechanics - Positioning and Movement
+*   7) AI - General priority matrix (think chess with weighted modifiers)
+*   8) AI - Non-combat priority matrix (i.e. NPCs)
+*   9) AI - Advanced combat AI
+*   10) AI - Group dynamics (swarming, ranged supporting, buffing/debuffing)
