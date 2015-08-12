@@ -8,12 +8,41 @@ import libtcodpy as libtcod
 # Class Components TODO: Get this onto a separate file
 ####################
 class Fighter:
-    def __init__(self, hp, defense, power, death_function=None):
-        self.max_hp = hp
-        self.hp = hp
-        self.defense = defense
-        self.power = power
+    """
+    TODO: Relabel this to like 'living thing' or something.
+    """
+    def __init__(self, body, mind, will, death_function=None):
+        #Primary statistics
+        self.body = body
+        self.mind = mind
+        self.will = will
+        
+        #Derived statistics
+        self.constitution = int((self.body + self.will)/2 + 1)
+        self.max_hp = self.constitution * 2 * 10
+        self.hp = self.max_hp
+        
+        self.speed = int((.75 * mind) + (.25 * body))
+        
+        self.ego = (int(mind + will)/2) + 1
+
+        #Skills
+        self.dodge = 0
+        self.parry = 0
+        self.block = 0
+        self.unarmed = 0
+ 
+        # Combat System Stats
+        self.defense = self.speed + self.dodge/2 + self.parry/2 + self.block/2
+        self.power = self.body + self.speed
+        
+        # Old
+        #self.max_hp = hp
+        #self.hp = hp
+        #self.defense = defense
+        #self.power = power
         self.death_function = death_function
+        
 
     def take_damage(self, damage):
         if damage > 0:
@@ -206,7 +235,7 @@ libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 # Globals
 ############################################
 
-fighter_component = Fighter(hp=30, defense=2, power=5, death_function=player_death)
+fighter_component = Fighter(4,4,4, death_function=player_death)
 
 #create object representing the player
 player = Object(0,0, '@', 'player', libtcod.white, blocks = True, 
@@ -248,15 +277,13 @@ def place_objects(room):
         y = randint(0, room.y1, room.y2)
         if not is_blocked(x,y):    
             if(randint(0, 0, 100) < 80): #80% chance
-                fighter_component = Fighter(hp=10, defense=0, power=3,
-                    death_function=monster_death)
+                fighter_component = Fighter(3, 3, 3, death_function=monster_death)
                 ai_component = BasicMonster()
                 monster = Object(x,y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
                     fighter=fighter_component,
                     ai=ai_component)
             else:
-                fighter_component = Fighter(hp=16, defense=1, power=4, 
-                    death_function=monster_death)
+                fighter_component = Fighter(4, 4, 4, death_function=monster_death)
                 ai_component = BasicMonster()
                 monster = Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
                     fighter=fighter_component,
