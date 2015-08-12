@@ -38,12 +38,27 @@ class Game:
         self.makeMap()
         
         # Blit is what updates the main surface to your work surface
-        self.updateSurface()
- 
+        l.console_blit(self.canvas, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
+        
         while(self.state):
-            self.updateSurface()
+            #self.renderAll()
+
+            l.console_blit(self.canvas, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
             l.console_flush()        
-            self.handleKeys()
+
+            # Remove old positions first
+            for obj in self.objects:
+                obj.clear()
+    
+            action = self.handleKeys()
+            if action == 'exit':
+                self.state = 0
+                break
+            elif self.state == 1 and action != 'didnt-take-turn':
+                for obj in self.objects:
+                    if obj.ai:
+                        obj.ai.take_turn()
+            
     
     def isBlocked(self, x, y):
         """
@@ -71,9 +86,6 @@ class Game:
         self.objects.append(self.player)
         
         pass
-
-    def updateSurface(self):
-        l.console_blit(self.canvas, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
     def handleKeys(self):
         #key = l.console_check_for_keypress() #THIS DOESN'T BLOCK

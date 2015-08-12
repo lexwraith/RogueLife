@@ -1,6 +1,5 @@
-####################
-# Classes TODO: Get this onto a separate file
-####################
+import libtcodpy as libtcod
+
 class Rect:
     def __init__(self, x, y, w, h):
         self.x1 = x
@@ -83,20 +82,19 @@ class Object:
 
     def draw(self):
         #set the color and then draw the character that represents this object at its position
-        libtcod.console_set_default_foreground(con, self.color)
-        libtcod.console_put_char(con, self.x, self.y, self.char, libtcod.BKGND_NONE)
+        libtcod.console_set_default_foreground(self.game.canvas, self.color)
+        libtcod.console_put_char(self.game.canvas, self.x, self.y, self.char, libtcod.BKGND_NONE)
  
     def clear(self):
         #erase the character that represents this object
-        libtcod.console_put_char(con, self.x, self.y, ' ', libtcod.BKGND_NONE)
+        libtcod.console_put_char(self.game.canvas, self.x, self.y, ' ', libtcod.BKGND_NONE)
 
     def send_to_back(self):
         """
         Puts object at start of draw queue.
         TODO: Draw queue should be a priority queue/heap.
         """
-        global objects
-        objects.remove(self)
-        objects.insert(0,self)
+        self.game.objects.remove(self)
+        self.game.objects.insert(0,self)
 
 
