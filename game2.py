@@ -94,6 +94,7 @@ class Game:
 
         TODO: Generalize this for all first-time generation of a room.
         """
+        
         numMonsters = randint(0, 0, MAX_ROOM_MONSTERS)
         for i in range(numMonsters):
             x = randint(0, room.x1, room.x2)
@@ -119,7 +120,10 @@ class Game:
         """
         Only allows one instance of a player.
         """    
-        self.player = Object(self, 0, 0, '@', 'Player', l.white, blocks=True)
+        fighter_component = Fighter(4,4,4, death_function=player_death)
+
+        self.player = Object(self, 0, 0, '@', 'Player', l.white, blocks=True,
+            fighter=fighter_component)
         self.objects.append(self.player)
         
         pass
@@ -206,7 +210,7 @@ class Game:
                     break
             if not failed:
                 self.createRoom(new_room)
-                #place_objects(new_room)
+                self.genObjects(new_room)
                 (new_x, new_y) = new_room.center()
                 
                 #Special case for first room; puts player in there
@@ -262,9 +266,9 @@ class Game:
 
         l.console_blit(self.canvas, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
-    #l.console_set_default_foreground(con, libtcod.white)
-    #l.console_print_ex(con, 1, SCREEN_HEIGHT - 2, libtcod.BKGND_NONE, libtcod.LEFT,
-    #    'HP:%s/%s' % (player.fighter.hp, player.fighter.max_hp))
+        l.console_set_default_foreground(self.canvas, l.white)
+        l.console_print_ex(self.canvas, 1, SCREEN_HEIGHT - 2, l.BKGND_NONE, l.LEFT,
+            'HP:%s/%s' % (self.player.fighter.hp, self.player.fighter.max_hp))
     
              
 if __name__ == "__main__":

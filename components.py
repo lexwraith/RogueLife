@@ -1,5 +1,7 @@
+import libtcodpy as libtcod
+
 ####################
-# Class Components TODO: Get this onto a separate file
+# Class Components
 ####################
 class Fighter:
     """
@@ -29,7 +31,7 @@ class Fighter:
         # Combat System Stats
         self.defense = self.speed + self.dodge/2 + self.parry/2 + self.block/2
         self.power = self.body + self.speed
-        
+
         # Old
         #self.max_hp = hp
         #self.hp = hp
@@ -60,10 +62,31 @@ class BasicMonster:
         Beelines for player and attacks.
         """
         monster = self.owner
-        if(libtcod.map_is_in_fov(fov_map, monster.x, monster.y)): 
+        player = monster.game.player
+        if(libtcod.map_is_in_fov(monster.game.fov, 
+                monster.x, monster.y)): 
             if monster.distance_to(player) >= 2:
                 monster.move_towards(player.x, player.y)
             elif(player.fighter.hp > 0):
                 monster.fighter.attack(player)
 
+###############################
+# Auxiliary Functions
+###############################
+def player_death(player):
+    print('You dead son.')
+    player.game.state = 'dead'
+
+    player.char = '%'
+    player.color = libtcod.dark_red
+
+def monster_death(monster):
+    print('%s is dead.' % monster.name.capitalize())
+    monster.char = '%'
+    monster.color = libtcod.dark_red
+    monster.blocks = False
+    monster.fighter = None
+    monster.ai = None
+    monster.name = 'remains of %s' % monster.name
+    monster.send_to_back()
 
