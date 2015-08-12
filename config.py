@@ -2,13 +2,16 @@ from libtcodpy import Color
 #############################
 # Configuration Variables
 #############################
-#actual size of the window
-SCREEN_WIDTH = 80
-SCREEN_HEIGHT = 50
+#actual size of the window (tiles are 8 x 8 pixels)
+#800 x 600 = 100,75
+#1024 x 768 = 128,96
+#1366 x 768 = 171, 96
+SCREEN_WIDTH = 120
+SCREEN_HEIGHT = 90
 
 #actual size of map
-MAP_WIDTH = 80
-MAP_HEIGHT = 45 #room for sidebar
+MAP_WIDTH = SCREEN_WIDTH
+MAP_HEIGHT = SCREEN_HEIGHT - 30 #room for sidebar
 
 LIMIT_FPS = 30
 
